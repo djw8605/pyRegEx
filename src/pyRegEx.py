@@ -188,8 +188,9 @@ def printtree(node):
 
 def convert_regex(regex_string):
     new_string = regex_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
+    new_string = new_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
     new_string = new_string.strip()
-    (start_nodes, final_nodes) = scan(new_string, 0, len(regex_string)-1, 0)
+    (start_nodes, final_nodes) = scan(new_string, 0, len(new_string)-1, 0)
     print "Start: " + str(start_nodes)
     print "Final: ",
     for node in final_nodes:
