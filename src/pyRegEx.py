@@ -94,20 +94,20 @@ def get_star(token_list):
 operators = ["|", "*", "&"]
 
 def scan(regex_string, start_index, stop_index, parenthese_level):
-    if start_index == stop_index:
+    if start_index > stop_index:
         return (None, None)
     found = False
     counter = start_index
-    print regex_string[start_index:stop_index]
+    print regex_string[start_index:stop_index+1]
     pcounter = 0
-    while(found == False and counter < stop_index):
+    while(found == False and counter <= stop_index):
         if regex_string[counter] == '(':
             pcounter += 1
         elif regex_string[counter] == ')':
             pcounter -= 1
         elif regex_string[counter] in operators and pcounter <= parenthese_level:
             print "Splitting on %s,  %s : %s" % (regex_string[counter], regex_string[start_index:counter], regex_string[counter+1:stop_index+1])
-            (start_node1, final_nodes1) = scan(regex_string, start_index, counter, parenthese_level+1)
+            (start_node1, final_nodes1) = scan(regex_string, start_index, counter-1, parenthese_level+1)
             (start_node2, final_nodes2) = scan(regex_string, counter+1, stop_index, parenthese_level+1)
             operator = regex_string[counter]
             if operator == '&':
@@ -133,7 +133,8 @@ def scan(regex_string, start_index, stop_index, parenthese_level):
         
     start_node = NFANode()
     final_node = NFANode()
-    character = regex_string[start_index:stop_index].replace('(', '').replace(')', '')
+    character = regex_string[start_index:stop_index+1].replace('(', '').replace(')', '')
+    print character
     start_node.transition[character] = final_node
     return (start_node, [final_node])
         
