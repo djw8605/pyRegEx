@@ -102,8 +102,8 @@ def scan(regex_string, start_index, stop_index, parenthese_level):
     pcounter = 0
     while(found == False and counter <= stop_index):
         if regex_string[stop_index] == "*":
-            (start_node1, final_nodes1) = scan(regex_string, start_index, counter, parenthese_level+1)
-            print "Starring %s" % regex_string[start_index:counter+1]
+            (start_node1, final_nodes1) = scan(regex_string, start_index, stop_index-1, parenthese_level+1)
+            print "Starring %s" % regex_string[start_index:stop_index]
             new_end = NFANode()
             new_start = NFANode()
             new_start.transition["e"].append(start_node1)
@@ -140,14 +140,13 @@ def scan(regex_string, start_index, stop_index, parenthese_level):
                 new_start = NFANode()
                 new_start.transition["e"].append(start_node1)
                 new_start.transition["e"].append(start_node2)
-                print str(new_start) + " " + str(new_start.transition)
+                #print str(new_start) + " " + str(new_start.transition)
                 return (new_start, final_nodes1 + final_nodes2)
         counter += 1
         
     start_node = NFANode()
     final_node = NFANode()
     character = regex_string[start_index:stop_index+1].replace('(', '').replace(')', '')
-    print character
     start_node.transition[character] = final_node
     return (start_node, [final_node])
         
