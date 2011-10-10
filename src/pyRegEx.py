@@ -91,7 +91,7 @@ def get_star(token_list):
     else:
         return a
 
-operators = ["|", "*", "&"]
+operators = ["|", "&"]
 
 def scan(regex_string, start_index, stop_index, parenthese_level):
     if start_index > stop_index:
@@ -101,13 +101,26 @@ def scan(regex_string, start_index, stop_index, parenthese_level):
     print regex_string[start_index:stop_index+1]
     pcounter = 0
     while(found == False and counter <= stop_index):
-        if regex_string[counter] == '(':
+        if regex_string[stop_index] == "*":
+            (start_node1, final_nodes1) = scan(regex_string, start_index, counter, parenthese_level+1)
+            print "Starring %s" % regex_string[start_index:counter+1]
+            new_end = NFANode()
+            new_start = NFANode()
+            new_start.transition["e"].append(start_node1)
+            for node in final_nodes1:
+                node.transition['e'].append(new_start)
+            new_start.transition["e"].append(new_end)
+            return (new_start, [new_end])
+        elif regex_string[counter] == '(':
             pcounter += 1
         elif regex_string[counter] == ')':
             pcounter -= 1
         elif regex_string[counter] in operators and pcounter <= parenthese_level:
-            print "Splitting on %s,  %s : %s" % (regex_string[counter], regex_string[start_index:counter], regex_string[counter+1:stop_index+1])
+            operator = regex_string[counter]
+            print "Splitting on %s,  %s : %s" % (operator, regex_string[start_index:counter], regex_string[counter+1:stop_index+1])
+            # Left side
             (start_node1, final_nodes1) = scan(regex_string, start_index, counter-1, parenthese_level+1)
+            # Right side
             (start_node2, final_nodes2) = scan(regex_string, counter+1, stop_index, parenthese_level+1)
             operator = regex_string[counter]
             if operator == '&':
