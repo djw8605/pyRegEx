@@ -30,8 +30,11 @@ def scan(regex_string, start_index, stop_index, parenthese_level):
     print regex_string[start_index:stop_index+1]
     pcounter = 0
     while(found == False and counter <= stop_index):
-        if regex_string[stop_index] == "*":
-            (start_node1, final_nodes1) = scan(regex_string, start_index, stop_index-1, parenthese_level+1)
+        if regex_string[stop_index] == "*" or (regex_string[stop_index] == ")" and regex_string[stop_index-1] == "*"):
+            if regex_string[stop_index] == ")" and regex_string[stop_index-1] == "*":
+                (start_node1, final_nodes1) = scan(regex_string, start_index, stop_index-2, parenthese_level+1)
+            else:
+                (start_node1, final_nodes1) = scan(regex_string, start_index, stop_index-1, parenthese_level+1)
             print "Starring %s" % regex_string[start_index:stop_index]
             new_end = NFANode()
             new_start = NFANode()
@@ -80,6 +83,24 @@ def scan(regex_string, start_index, stop_index, parenthese_level):
     return (start_node, [final_node])
         
 
+
+
+def scan2(regex_string, start_index, stop_index):
+    if regex_string[start_index] == "(":
+        # Search for ending parenthese
+        counter = start_index
+        pcounter = 0
+        while counter < stop_index:
+            if regex_string[counter] == "(":
+                pcounter += 1
+                continue
+            elif regex_string[counter] == ")" and pcounter == 0:
+                # Found ending parenthese:
+                return scan2(regex_string, start_index + 1, counter)
+            elif regex_string[counter] == ")":
+                pcounter -= 1
+        pass
+    
 
 
 seen_nodes = []
