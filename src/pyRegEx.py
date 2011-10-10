@@ -83,24 +83,85 @@ def scan(regex_string, start_index, stop_index, parenthese_level):
     return (start_node, [final_node])
         
 
-
+letters = ["a", "b", "e"]
 
 def scan2(regex_string, start_index, stop_index):
-    if regex_string[start_index] == "(":
-        # Search for ending parenthese
-        counter = start_index
-        pcounter = 0
-        while counter < stop_index:
-            if regex_string[counter] == "(":
-                pcounter += 1
-                continue
-            elif regex_string[counter] == ")" and pcounter == 0:
-                # Found ending parenthese:
-                return scan2(regex_string, start_index + 1, counter)
-            elif regex_string[counter] == ")":
-                pcounter -= 1
-        pass
+    regex_counter = start_index
+    leftside = []
+    rightside = []
+    while regex_counter <= stop_index:
+        print "Parsing: " + regex_string[regex_counter]
+        print "Counter = " + str(regex_counter)
+        # parenthese matching
+        if regex_string[regex_counter] == "(":
+            print "Found start parenth"
+            pcounter = 0
+            find_end_counter = regex_counter+1
+            while find_end_counter <= stop_index:
+                print "Searching for end parenthese: " + regex_string[find_end_counter]
+                if regex_string[find_end_counter] == "(":
+                    pcounter += 1
+                elif regex_string[find_end_counter] == ")" and pcounter == 0:
+                    # Found ending parenthese:
+                    print "Parsing inner: " + regex_string[regex_counter+1:find_end_counter]
+                    print "find_end_counter = " + str(find_end_counter)
+                    leftside = scan2(regex_string, regex_counter + 1, find_end_counter-1)
+                    regex_counter = find_end_counter
+                    # break out of while loop 
+                    break
+                elif regex_string[find_end_counter] == ")":
+                    pcounter -= 1
+                find_end_counter += 1
+                    
+        
+        
+        # if the character is a letter
+        elif regex_string[regex_counter] in letters:
+            character = regex_string[regex_counter]
+            print "Found character: " + character
+            start_node = NFANode()
+            final_node = NFANode()
+            start_node.transition[character] = final_node
+            if len(leftside) == 0:
+                leftside = (start_node, [final_node])
+
+        # Starring operation
+        elif regex_string[regex_counter] is "*":
+            print "Starring: " + regex_string[start_index:regex_counter+1]
+            new_end = NFANode()
+            new_start = NFANode()
+            new_start.transition["e"].append(leftside[0])
+            for node in leftside[1]:
+                node.transition['e'].append(new_start)
+            new_start.transition["e"].append(new_end)
+            leftside = (new_start, [new_end])
+
+        # operators (or and and)
+        elif regex_string[regex_counter] in operators:
+            operator = regex_string[regex_counter]
+            # Need to get right side
+            print "Splitting on %s - %s : %s" % (operator, regex_string[start_index:regex_counter], regex_string[regex_counter+1:stop_index+1])
+            (right_start, right_finals) = scan2(regex_string, regex_counter+1, stop_index)
+            
+            if operator == '&':
+                for node in leftside[1]:
+                    node.transition['e'].append(right_start)
+                print "returning from & ..."
+                return (leftside[0], right_finals)
+            elif operator == '|':
+                new_start = NFANode()
+                new_start.transition["e"].append(leftside[0])
+                new_start.transition["e"].append(right_start)
+                #print str(new_start) + " " + str(new_start.transition)
+                print "returning from | ..."
+                return (new_start, leftside[1] + right_finals)
+        
+        
+        print "At end: " + regex_string[regex_counter]
+        regex_counter += 1
     
+    print "returning..."
+    return leftside
 
 
 seen_nodes = []
@@ -110,12 +171,12 @@ def printtree(node):
     for key in tree_dict:
         print str(node) + " ",
         if key == 'e':
-            print key + " ",
+            print str(key) + " ",
             for node in tree_dict[key]:
                 print str(node),
             print ""
         else:
-            print key + " " + str(tree_dict[key])
+            print str(key) + " " + str(tree_dict[key])
         
         
         if key == 'e':
@@ -134,7 +195,9 @@ def convert_regex(regex_string):
     new_string = regex_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
     new_string = new_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
     new_string = new_string.strip()
-    (start_nodes, final_nodes) = scan(new_string, 0, len(new_string)-1, 0)
+    print new_string
+    #(start_nodes, final_nodes) = scan(new_string, 0, len(new_string)-1, 0)
+    (start_nodes, final_nodes) = scan2(new_string, 0, len(new_string)-1)
     print "Start: " + str(start_nodes)
     print "Final: ",
     for node in final_nodes:
