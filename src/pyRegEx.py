@@ -8,6 +8,9 @@ import sys
 main_counter = 0
 
 class NFANode:
+    """
+    Class for the 'graph' for a NFA
+    """
     def __init__(self):
         global main_counter
         self.transition = {}
