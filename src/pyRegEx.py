@@ -20,69 +20,8 @@ class NFANode:
         return str(self.id)
 
 
+# Constants
 operators = ["|", "&"]
-
-def scan(regex_string, start_index, stop_index, parenthese_level):
-    if start_index > stop_index:
-        return (None, None)
-    found = False
-    counter = start_index
-    print regex_string[start_index:stop_index+1]
-    pcounter = 0
-    while(found == False and counter <= stop_index):
-        if regex_string[stop_index] == "*" or (regex_string[stop_index] == ")" and regex_string[stop_index-1] == "*"):
-            if regex_string[stop_index] == ")" and regex_string[stop_index-1] == "*":
-                (start_node1, final_nodes1) = scan(regex_string, start_index, stop_index-2, parenthese_level+1)
-            else:
-                (start_node1, final_nodes1) = scan(regex_string, start_index, stop_index-1, parenthese_level+1)
-            print "Starring %s" % regex_string[start_index:stop_index]
-            new_end = NFANode()
-            new_start = NFANode()
-            new_start.transition["e"].append(start_node1)
-            for node in final_nodes1:
-                node.transition['e'].append(new_start)
-            new_start.transition["e"].append(new_end)
-            return (new_start, [new_end])
-        elif regex_string[counter] == '(':
-            pcounter += 1
-        elif regex_string[counter] == ')':
-            pcounter -= 1
-        elif regex_string[counter] in operators and pcounter <= parenthese_level:
-            operator = regex_string[counter]
-            print "Splitting on %s,  %s : %s" % (operator, regex_string[start_index:counter], regex_string[counter+1:stop_index+1])
-            # Left side
-            (start_node1, final_nodes1) = scan(regex_string, start_index, counter-1, parenthese_level+1)
-            # Right side
-            (start_node2, final_nodes2) = scan(regex_string, counter+1, stop_index, parenthese_level+1)
-            operator = regex_string[counter]
-            if operator == '&':
-                for node in final_nodes1:
-                    node.transition['e'].append(start_node2)
-                return (start_node1, final_nodes2)
-            elif operator == '*':
-                new_end = NFANode()
-                new_start = NFANode()
-                new_start.transition["e"].append(start_node1)
-                for node in final_nodes1:
-                    node.transition['e'].append(new_start)
-                new_start.transition["e"].append(new_end)
-                return (new_start, [new_end])
-                
-            elif operator == '|':
-                new_start = NFANode()
-                new_start.transition["e"].append(start_node1)
-                new_start.transition["e"].append(start_node2)
-                #print str(new_start) + " " + str(new_start.transition)
-                return (new_start, final_nodes1 + final_nodes2)
-        counter += 1
-        
-    start_node = NFANode()
-    final_node = NFANode()
-    character = regex_string[start_index:stop_index+1].replace('(', '').replace(')', '')
-    start_node.transition[character] = final_node
-    return (start_node, [final_node])
-        
-
 letters = ["a", "b", "e"]
 
 def scan2(regex_string, start_index, stop_index):
