@@ -27,7 +27,7 @@ class NFANode:
 operators = ["|", "&"]
 letters = ["a", "b", "e"]
 
-def scan2(regex_string, start_index, stop_index):
+def parse_regex(regex_string, start_index, stop_index):
     regex_counter = start_index
     leftside = []
     rightside = []
@@ -48,7 +48,7 @@ def scan2(regex_string, start_index, stop_index):
                     # Found ending parenthese:
                     #print "Parsing inner: " + regex_string[regex_counter+1:find_end_counter]
                     #print "find_end_counter = " + str(find_end_counter)
-                    leftside = scan2(regex_string, regex_counter + 1, find_end_counter-1)
+                    leftside = parse_regex(regex_string, regex_counter + 1, find_end_counter-1)
                     regex_counter = find_end_counter
                     # break out of while loop 
                     break
@@ -85,7 +85,7 @@ def scan2(regex_string, start_index, stop_index):
             operator = regex_string[regex_counter]
             # Need to get right side
             #print "Splitting on %s - %s : %s" % (operator, regex_string[start_index:regex_counter], regex_string[regex_counter+1:stop_index+1])
-            (right_start, right_finals) = scan2(regex_string, regex_counter+1, stop_index)
+            (right_start, right_finals) = parse_regex(regex_string, regex_counter+1, stop_index)
             
             if operator == '&':
                 for node in leftside[1]:
@@ -181,16 +181,10 @@ def convert_regex(regex_string):
     new_string = regex_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
     new_string = new_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
     new_string = new_string.strip()
-    #print new_string
-    #(start_nodes, final_nodes) = scan(new_string, 0, len(new_string)-1, 0)
-    (start_nodes, final_nodes) = scan2(new_string, 0, len(new_string)-1)
-    #print "Start: " + str(start_nodes)
-    #print "Final: ",
-    #for node in final_nodes:
-        #print str(node) + " ",
-    #print final_nodes
-    #ConvertNFAtoDFA(start_nodes, final_nodes)
-    #printtree(start_nodes)
+
+    # parse the regex
+    (start_nodes, final_nodes) = parse_regex(new_string, 0, len(new_string)-1)
+
     return (start_nodes, final_nodes)
 
 
