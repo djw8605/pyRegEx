@@ -63,7 +63,8 @@ def scan2(regex_string, start_index, stop_index):
             print "Found character: " + character
             start_node = NFANode()
             final_node = NFANode()
-            start_node.transition[character] = final_node
+            start_node.transition[character] = []
+            start_node.transition[character].append(final_node)
             if len(leftside) == 0:
                 leftside = (start_node, [final_node])
 
@@ -106,30 +107,71 @@ def scan2(regex_string, start_index, stop_index):
     return leftside
 
 
+
+def GetEStates(state):
+    """
+    Recursive function to get all states connected to 'state' 
+    with an empty string
+    """
+    current_nodes = []
+    #print "Finding e states for " + str(state)
+    for node in state.transition["e"]:
+        # Break loops
+        if node not in current_nodes:
+            current_nodes.extend(GetEStates(node))
+        
+    current_nodes.append(state)
+    return current_nodes
+
+
+def SimulateNFA(NFAStart, input):
+    current_visited = [NFAStart]
+    # loop through the regular expression
+    for char in input:
+        # First, add to current_visited all nodes linked to current visited
+        # by a empty string
+        #print "character is " + char
+        tmp_visited = current_visited[:]
+        for node in tmp_visited:
+            #print node
+            current_visited.extend(GetEStates(node))
+        current_visited = list(set(current_visited))
+        
+        # Next find what states we can transition to
+        #print current_visited
+        if char is not 'e':
+            tmp_visited = current_visited[:]
+            current_visited = []
+            for node in tmp_visited:
+                if node.transition.has_key(char):
+                    #print node.transition[char]
+                    current_visited.extend(node.transition[char])
+    
+    # One last time, transition to all the 'e' states
+    #print current_visited
+    tmp_visited = current_visited[:]
+    for node in tmp_visited:
+        current_visited.extend(GetEStates(node))
+    current_visited = list(set(current_visited))
+    return current_visited
+    
+
 seen_nodes = []
 def printtree(node):
    
     tree_dict = node.transition
     for key in tree_dict:
         print str(node) + " ",
-        if key == 'e':
-            print str(key) + " ",
-            for node in tree_dict[key]:
-                print str(node),
-            print ""
-        else:
-            print str(key) + " " + str(tree_dict[key])
+        print str(key) + " ",
+        for node in tree_dict[key]:
+            print str(node),
+        print ""
         
-        
-        if key == 'e':
-            for node in tree_dict[key]:
-                if not node in seen_nodes:
-                    seen_nodes.append(node)
-                    printtree(node)
-        else:
-            if not tree_dict[key] in seen_nodes:
-                seen_nodes.append(tree_dict[key])
-                printtree(tree_dict[key])
+        for node in tree_dict[key]:
+            if not node in seen_nodes:
+                seen_nodes.append(node)
+                printtree(node)
+
             
 
 
@@ -145,7 +187,9 @@ def convert_regex(regex_string):
     for node in final_nodes:
         print str(node) + " ",
     print final_nodes
+    #ConvertNFAtoDFA(start_nodes, final_nodes)
     printtree(start_nodes)
+    return (start_nodes, final_nodes)
 
 
 
@@ -154,8 +198,22 @@ def main():
     regex_string = sys.stdin.readline()
     
     #Convert 
-    convert_regex(regex_string)
+    (start_node, final_nodes) = convert_regex(regex_string)
     
+    for line in sys.stdin.readlines():
+        current_nodes = SimulateNFA(start_node, line.strip())
+        found_final = False
+        print "Line = " + line.strip()
+        #print current_nodes
+        for node in current_nodes:
+            if node in final_nodes:
+                found_final = True
+        if found_final:
+            print "yes"
+        else:
+            print "no"
+            
+        
     pass
 
 
