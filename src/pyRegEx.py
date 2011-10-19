@@ -32,21 +32,22 @@ def scan2(regex_string, start_index, stop_index):
     leftside = []
     rightside = []
     while regex_counter <= stop_index:
-        print "Parsing: " + regex_string[regex_counter]
-        print "Counter = " + str(regex_counter)
+        #print "Parsing: " + regex_string[regex_counter]
+        #print "Counter = " + str(regex_counter)
         # parenthese matching
         if regex_string[regex_counter] == "(":
-            print "Found start parenth"
+            #print "Found start parenth"
             pcounter = 0
             find_end_counter = regex_counter+1
+            # Search for ending parenthese
             while find_end_counter <= stop_index:
-                print "Searching for end parenthese: " + regex_string[find_end_counter]
+                #print "Searching for end parenthese: " + regex_string[find_end_counter]
                 if regex_string[find_end_counter] == "(":
                     pcounter += 1
                 elif regex_string[find_end_counter] == ")" and pcounter == 0:
                     # Found ending parenthese:
-                    print "Parsing inner: " + regex_string[regex_counter+1:find_end_counter]
-                    print "find_end_counter = " + str(find_end_counter)
+                    #print "Parsing inner: " + regex_string[regex_counter+1:find_end_counter]
+                    #print "find_end_counter = " + str(find_end_counter)
                     leftside = scan2(regex_string, regex_counter + 1, find_end_counter-1)
                     regex_counter = find_end_counter
                     # break out of while loop 
@@ -60,7 +61,7 @@ def scan2(regex_string, start_index, stop_index):
         # if the character is a letter
         elif regex_string[regex_counter] in letters:
             character = regex_string[regex_counter]
-            print "Found character: " + character
+            #print "Found character: " + character
             start_node = NFANode()
             final_node = NFANode()
             start_node.transition[character] = []
@@ -70,7 +71,7 @@ def scan2(regex_string, start_index, stop_index):
 
         # Starring operation
         elif regex_string[regex_counter] is "*":
-            print "Starring: " + regex_string[start_index:regex_counter+1]
+            #print "Starring: " + regex_string[start_index:regex_counter+1]
             new_end = NFANode()
             new_start = NFANode()
             new_start.transition["e"].append(leftside[0])
@@ -83,27 +84,27 @@ def scan2(regex_string, start_index, stop_index):
         elif regex_string[regex_counter] in operators:
             operator = regex_string[regex_counter]
             # Need to get right side
-            print "Splitting on %s - %s : %s" % (operator, regex_string[start_index:regex_counter], regex_string[regex_counter+1:stop_index+1])
+            #print "Splitting on %s - %s : %s" % (operator, regex_string[start_index:regex_counter], regex_string[regex_counter+1:stop_index+1])
             (right_start, right_finals) = scan2(regex_string, regex_counter+1, stop_index)
             
             if operator == '&':
                 for node in leftside[1]:
                     node.transition['e'].append(right_start)
-                print "returning from & ..."
+                #print "returning from & ..."
                 return (leftside[0], right_finals)
             elif operator == '|':
                 new_start = NFANode()
                 new_start.transition["e"].append(leftside[0])
                 new_start.transition["e"].append(right_start)
                 #print str(new_start) + " " + str(new_start.transition)
-                print "returning from | ..."
+                #print "returning from | ..."
                 return (new_start, leftside[1] + right_finals)
         
         
-        print "At end: " + regex_string[regex_counter]
+        #print "At end: " + regex_string[regex_counter]
         regex_counter += 1
     
-    print "returning..."
+    #print "returning..."
     return leftside
 
 
@@ -197,9 +198,10 @@ def main():
     # Read in input
     regex_string = sys.stdin.readline()
     
-    #Convert 
+    # Convert regex to NFA
     (start_node, final_nodes) = convert_regex(regex_string)
     
+    # Read in each line, simulating the NFA each time
     for line in sys.stdin.readlines():
         current_nodes = SimulateNFA(start_node, line.strip())
         found_final = False
@@ -212,9 +214,7 @@ def main():
             print "yes"
         else:
             print "no"
-            
-        
-    pass
+
 
 
 
