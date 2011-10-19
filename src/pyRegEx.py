@@ -177,19 +177,20 @@ def printtree(node):
 
 
 def convert_regex(regex_string):
+    # Add the & symbol for and's to make the expression easier to parse
     new_string = regex_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
     new_string = new_string.replace('aa', 'a&a').replace('ab', 'a&b').replace('ba', 'b&a').replace('bb', 'b&b').replace(')(', ')&(').replace('*a', '*&a').replace('*b', '*&b')
     new_string = new_string.strip()
-    print new_string
+    #print new_string
     #(start_nodes, final_nodes) = scan(new_string, 0, len(new_string)-1, 0)
     (start_nodes, final_nodes) = scan2(new_string, 0, len(new_string)-1)
-    print "Start: " + str(start_nodes)
-    print "Final: ",
-    for node in final_nodes:
-        print str(node) + " ",
-    print final_nodes
+    #print "Start: " + str(start_nodes)
+    #print "Final: ",
+    #for node in final_nodes:
+        #print str(node) + " ",
+    #print final_nodes
     #ConvertNFAtoDFA(start_nodes, final_nodes)
-    printtree(start_nodes)
+    #printtree(start_nodes)
     return (start_nodes, final_nodes)
 
 
@@ -205,7 +206,7 @@ def main():
     for line in sys.stdin.readlines():
         current_nodes = SimulateNFA(start_node, line.strip())
         found_final = False
-        print "Line = " + line.strip()
+        #print "Line = " + line.strip()
         #print current_nodes
         for node in current_nodes:
             if node in final_nodes:
